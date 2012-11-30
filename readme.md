@@ -21,7 +21,7 @@ Documentation
 
 After installing, you can find documentation at this page:
 
-[https://mpaladin.web.cern.ch/mpaladin/java/dirq/](https://mpaladin.web.cern.ch/mpaladin/java/dirq/)
+[https://github.com/mpaladin/java-dirq-test](https://github.com/mpaladin/java-dirq-test)
 
 License and Copyright
 ---------------------

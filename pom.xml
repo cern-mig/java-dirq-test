@@ -7,7 +7,7 @@
   <version>1.0-SNAPSHOT</version>
   <name>java-dirq-test</name>
   <description>Directory based queue test utility.</description>
-  <url>https://mpaladin.web.cern.ch/mpaladin/java/dirq/</url>
+  <url>https://github.com/mpaladin/java-dirq-test</url>
 
   <licenses>
     <license>

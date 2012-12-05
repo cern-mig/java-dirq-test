@@ -1,6 +1,8 @@
 java-dirq-test
 =========
 
+[![Build Status](https://secure.travis-ci.org/mpaladin/java-dirq-test.png)](http://travis-ci.org/mpaladin/java-dirq-test)
+
 Overview
 --------
 

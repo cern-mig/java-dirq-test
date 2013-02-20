@@ -1,6 +1,8 @@
 package ch.cern.dirq.test;
 
-import junit.framework.TestCase;
+import java.io.IOException;
+
+import org.junit.Test;
 
 /**
  * Unit test for {@link ch.cern.dirq.QueueSimple}.
@@ -8,23 +10,14 @@ import junit.framework.TestCase;
  * @author Massimo Paladin - massimo.paladin@gmail.com
  * <br />Copyright CERN 2010-2013
  */
-public class TestDirqLaunch extends TestCase {
-
-	/**
-	 * Create the test case.
-	 * 
-	 * @param name name of the test case
-	 */
-	public TestDirqLaunch(String name) {
-		super(name);
-	}
+public class TestDirqLaunch {
 
 	/** 	
 	* Multi test.
 	* 
 	* @throws Exception
 	*/  	
-	public void testMulti() throws Exception {	  	
+	@Test public void testMulti() throws IOException {	  	
 		System.out.println("################ TestDirq simple ################## BEGIN");
 		new TestDirq().mainSimple();
 		System.out.println("################ TestDirq simple ################## END");

@@ -110,7 +110,7 @@ public class TestDirq {
 		return parsed;
 	}
 	
-	private Queue newDirq() throws Exception {
+	private Queue newDirq() throws IOException {
 		Queue queue = null;
 		if (options.isSimple())	{
 			QueueSimple tmp = new QueueSimple(options.getPath());
@@ -119,12 +119,12 @@ public class TestDirq {
 			}
 			queue = tmp;
 		} else {
-			throw new Exception("only DirQ simple is supported");
+			throw new IllegalArgumentException("only DirQ simple is supported");
 		}
 		return queue;
 	}
 
-	private void testSize() throws Exception {
+	private void testSize() {
 		Map<String, String> res = ProcessUtils.executeIt("du -ks " + options.getPath());
 		int exitValue = Integer.parseInt(res.get("exitValue"));
 		if (exitValue > 0) {
@@ -133,13 +133,13 @@ public class TestDirq {
 		debug("du output: " + res.get("out"));
 	}
 	
-	private void testCount() throws Exception {
+	private void testCount() throws IOException {
 		Queue queue = newDirq();
 		int count = queue.count();
 		debug("queue has " + count + " elements");
 	}
 	
-	private void testPurge() throws Exception {
+	private void testPurge() throws IOException {
 		debug("purging the queue...");
 		Queue queue = newDirq();
 		Map<String, Integer> opts = new HashMap<String, Integer>();
@@ -152,7 +152,7 @@ public class TestDirq {
 		queue.purge(opts);
 	}
 	
-	private void testGet() throws Exception {
+	private void testGet() throws IOException {
 		debug("getting all elements in the queue (one pass)...");
 		Queue queue = newDirq();
 		int done = 0;
@@ -167,7 +167,7 @@ public class TestDirq {
 		debug(String.format("%d elements browsed", done));
 	}
 	
-	private void testIterate() throws Exception {
+	private void testIterate() throws IOException {
 		debug("iterating all elements in the queue (one pass)...");
 		Queue queue = newDirq();
 		int done = 0;
@@ -202,10 +202,9 @@ public class TestDirq {
 	
 	/**
 	 * Test add action on a directory queue.
-	 * 
-	 * @throws Exception
+	 * @throws QueueException 
 	 */
-	private void testAdd() throws Exception {
+	private void testAdd() throws IOException {
 		boolean random = options.isRandom();
 		int size = options.getSize();
 		int count = options.getCount();
@@ -231,10 +230,9 @@ public class TestDirq {
 	
 	/**
 	 * Test remove action on a directory queue.
-	 * 
-	 * @throws Exception
+	 * @throws QueueException 
 	 */
-	private void testRemove() throws Exception {
+	private void testRemove() throws IOException {
 		int count = options.getCount();
 		if (count > -1) {
 			debug(String.format("removing %d elements from the queue...", count));
@@ -270,7 +268,7 @@ public class TestDirq {
 		}
 	}
 	
-	private void testSimple() throws Exception {
+	private void testSimple() throws IOException {
 		File path = new File(options.getPath());
 		if (path.exists()) {
 			die("directory exists: " + path);
@@ -287,12 +285,12 @@ public class TestDirq {
 		testPurge();
 		int num = path.listFiles().length;
 		if (num != 1) {
-			throw new Exception("unexpected subdirs number: " + num);
+			throw new IllegalArgumentException("unexpected subdirs number: " + num);
 		}
 		deleteRecursively(path);
 	}
 	
-	private void runTest(String name) throws Exception {
+	private void runTest(String name) throws IOException {
 		long t1 = System.currentTimeMillis();
 		if (name.equals("add")) {
 			testAdd();
@@ -311,7 +309,7 @@ public class TestDirq {
 		} else if (name.equals("size")) {
 			testSize();
 		} else {
-			throw new Exception("unexpected test name: " + name);
+			throw new IllegalArgumentException("unexpected test name: " + name);
 		}
 		long t2 = System.currentTimeMillis();
 		debug(String.format("done in %.4f seconds", (t2 - t1) / 1000.0));
@@ -338,17 +336,18 @@ public class TestDirq {
 	
 	/**
 	 * Allow to run a set of tests from unit tests.
+	 * @throws QueueException 
 	 * 
-	 * @throws Exception
+	 * @throws QueueException
 	 */
-	public void mainSimple() throws Exception {
+	public void mainSimple() throws IOException {
 		String[] args = {"--simple", "--count", "10", "--path", "/tmp/dirq-" + pid, "--debug", "simple"};
 		options = parseArguments(args);
 		File path = new File(options.getPath());
 		deleteRecursively(path);
 		try {
 			testSimple();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			deleteRecursively(path);
 			throw e;
 		}
@@ -360,9 +359,10 @@ public class TestDirq {
 	 * Execute tests with given command line.
 	 * 
 	 * @param args command line arguments
-	 * @throws Exception
+	 * @throws InterruptedException 
+	 * @throws QueueException
 	 */
-    public void doMain(String[] args) throws Exception {
+    public void doMain(String[] args) throws InterruptedException, IOException {
     	options = parseArguments(args);
     	if (options.getPath().length() == 0) {
     		die("Option is mandatory: -p/--path");
@@ -403,10 +403,10 @@ public class TestDirq {
 	 * Main called from command line.
 	 * 
 	 * @param args given command line arguments
+	 * @throws QueueException 
 	 * @throws InterruptedException 
-	 * @throws IOException 
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws InterruptedException, IOException {
 		new TestDirq().doMain(args);
 	}
 }

@@ -101,11 +101,9 @@ public class TestDirq {
 				tests.add(parsed.getTest());
 			}
 		} catch(ArgumentValidationException e) {
-			System.err.println(e.getMessage());
-			System.exit(1);
+			throw new RuntimeException(e.getMessage());
 		} catch (Exception e) {
-			System.err.println(e.getMessage());
-			System.exit(1);
+			throw new RuntimeException(e.getMessage());
 		}
 		return parsed;
 	}
@@ -381,9 +379,7 @@ public class TestDirq {
      * @param message message printed before dieing
      */
     private static void die(String message) {
-    	System.err.println(message);
-    	System.err.flush();
-		System.exit(1);
+		throw new RuntimeException(message);
     }
     
     /**

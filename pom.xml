@@ -2,10 +2,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>ch.cern.dirq.test</groupId>
-  <artifactId>java-dirq-test</artifactId>
+  <artifactId>dirq-test</artifactId>
   <packaging>jar</packaging>
   <version>1.1-SNAPSHOT</version>
-  <name>java-dirq-test</name>
+  <name>dirq-test</name>
   <description>Directory based queue test utility.</description>
   <url>https://github.com/mpaladin/java-dirq-test</url>
 
@@ -140,7 +140,7 @@
     </dependency>
     <dependency>
       <groupId>ch.cern.dirq</groupId>
-      <artifactId>java-dirq</artifactId>
+      <artifactId>dirq</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
   </dependencies>

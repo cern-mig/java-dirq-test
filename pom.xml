@@ -17,8 +17,8 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git://github.com/cern-mig/java-dirq-test.git</connection>
-    <developerConnection>scm:git:git://github.com/cern-mig/java-dirq-test.git</developerConnection>
+    <connection>scm:git:git@github.com:cern-mig/java-dirq-test.git</connection>
+    <developerConnection>scm:git:git@github.com:cern-mig/java-dirq-test.git</developerConnection>
     <url>https://github.com/cern-mig/java-dirq-test</url>
   </scm>
 

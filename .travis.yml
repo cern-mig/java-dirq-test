@@ -5,8 +5,8 @@ jdk:
   - oraclejdk7
 before_install:
   # clone java-dirq repo
-  - git clone --depth=100 --quiet --branch=master git://github.com/mpaladin/java-dirq.git mpaladin/java-dirq
-  - cd mpaladin/java-dirq
+  - git clone --depth=100 --quiet --branch=master git://github.com/cern-mig/java-dirq.git java-dirq-git
+  - cd java-dirq-git
   - mvn clean install
-  - cd ../../
+  - cd ../
 

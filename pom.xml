@@ -141,7 +141,7 @@
     <dependency>
       <groupId>ch.cern.dirq</groupId>
       <artifactId>dirq</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
     </dependency>
   </dependencies>
 </project>

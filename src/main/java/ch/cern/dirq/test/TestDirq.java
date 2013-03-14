@@ -28,7 +28,7 @@ import com.lexicalscope.jewel.cli.Option;
  * in order to validate the algorithm and their interoperability.
  * 
  * @author Massimo Paladin - massimo.paladin@gmail.com
- * <br />Copyright CERN 2010-2013
+ * <br />Copyright (C) CERN 2012-2013
  *
  */
 public class TestDirq {

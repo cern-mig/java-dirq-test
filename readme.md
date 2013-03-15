@@ -6,7 +6,7 @@ java-dirq-test
 Overview
 --------
 
-Utility to execute tests and stress tests against java-dirq.
+Utility to execute tests and stress tests against `java-dirq`.
 
 Install
 -------
@@ -17,6 +17,11 @@ To install this module, run the following commands:
     # or
     mvn package
     # get the jar from target folder
+
+Developers
+----------
+
+Look at `dev-guide.md` file.
 
 License and Copyright
 ---------------------

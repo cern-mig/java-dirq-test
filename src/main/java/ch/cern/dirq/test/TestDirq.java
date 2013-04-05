@@ -2,6 +2,7 @@ package ch.cern.dirq.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,6 +35,7 @@ import com.lexicalscope.jewel.cli.Option;
 public class TestDirq {
     private static final List<String> TESTS = Arrays.asList("add", "count", "size", "get", "iterate", "purge", "remove", "simple");
     private static final int pid = Posix.posix.getpid();
+    private static final SimpleDateFormat DBGDATEFMT = new SimpleDateFormat("yyyy/MM/dd-kk:mm:ss");
     private List<String> tests = null;
     private TestDirQArgs options = null;
 
@@ -95,14 +97,14 @@ public class TestDirq {
                 System.out.println("");
                 System.exit(0);
             }
-            if (! parsed.isSimple()) {
-                throw new ArgumentValidationException("DirQ normal not supported, only DirQ simple");
-            }
             if (parsed.getTest().equals("")) {
                 throw new ArgumentValidationException("missing test name");
             }
             if (! TESTS.contains(parsed.getTest())) {
                 throw new ArgumentValidationException("test name not valid: " + parsed.getTest());
+            }
+            if (! parsed.isSimple()) {
+                throw new ArgumentValidationException("DirQ normal not supported, only DirQ simple");
             }
             tests = new ArrayList<String>();
             tests.add(parsed.getTest());
@@ -358,7 +360,6 @@ public class TestDirq {
         deleteRecursively(path);
     }
 
-
     /**
      * Execute tests with given command line.
      *
@@ -397,7 +398,7 @@ public class TestDirq {
     	if (! options.isDebug()) {
             return;
     	}
-    	System.out.println(String.format("# %s [%d]: %s", new Date().toString(), pid, message));
+    	System.out.println(String.format("# %s TestDirq[%d]: %s", DBGDATEFMT.format(new Date()), pid, message));
     	System.out.flush();
     }
 

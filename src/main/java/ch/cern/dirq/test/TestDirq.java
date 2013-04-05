@@ -32,12 +32,12 @@ import com.lexicalscope.jewel.cli.Option;
  *
  */
 public class TestDirq {
-	private static final List<String> TESTS = Arrays.asList("all", "add", "count", "size", "get", "iterate", "purge", "remove", "simple");
+	private static final List<String> TESTS = Arrays.asList("add", "count", "size", "get", "iterate", "purge", "remove", "simple");
 	private static final int pid = Posix.posix.getpid();
 	private List<String> tests = null;
 	private TestDirQArgs options = null;
 	
-	@CommandLineInterface(application="test_dirq-java")
+	@CommandLineInterface(application="java-dirq-test")
 	private interface TestDirQArgs {
 		
 		@Option(shortName="c", longName="count", defaultValue="-1", description="set the elements count")
@@ -52,7 +52,7 @@ public class TestDirq {
 		@Option(helpRequest = true, description = "display help", longName = "help")
 		boolean getHelp();
 		
-		@Option(helpRequest = true, shortName="l", longName="list", description="tests: all add count get iterate purge remove simple")
+		@Option(shortName="l", longName="list", description="tests: add count size get iterate purge remove simple")
 		boolean getList();
 
 		@Option(longName="granularity", defaultValue="-1", description="time granularity for intermediate directories (QueueSimple)")
@@ -79,7 +79,7 @@ public class TestDirq {
 		@Option(longName="sleep", defaultValue="0", description="sleep this amount of seconds before starting")
 		int getSleep();
 		
-		@Unparsed(name="test")
+            @Unparsed(name="test", defaultValue="")
 		String getTest();
 	}
 	
@@ -87,19 +87,25 @@ public class TestDirq {
 		TestDirQArgs parsed = null;
 		try {
 			parsed = CliFactory.parseArguments(TestDirQArgs.class, args);
+                        if (parsed.getList()) {
+                            System.out.print("Available tests:");
+                            for (String test:TESTS) {
+                                System.out.print(" " + test);
+                            }
+                            System.out.println("");
+                            System.exit(0);
+                        }
 			if (! parsed.isSimple()) {
 				throw new ArgumentValidationException("DirQ normal not supported, only DirQ simple");
 			}
+                        if (parsed.getTest().equals("")) {
+				throw new ArgumentValidationException("missing test name");
+                        }
 			if (! TESTS.contains(parsed.getTest())) {
-				throw new ArgumentValidationException("test name not valid");
+				throw new ArgumentValidationException("test name not valid: " + parsed.getTest());
 			}
-			if (parsed.getTest().equals("all")) {
-				tests = new ArrayList<String>(TESTS);
-				tests.remove("all");
-			} else {
-				tests = new ArrayList<String>();
-				tests.add(parsed.getTest());
-			}
+                        tests = new ArrayList<String>();
+                        tests.add(parsed.getTest());
 		} catch(ArgumentValidationException e) {
 			throw new RuntimeException(e.getMessage());
 		} catch (Exception e) {

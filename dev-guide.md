@@ -1,4 +1,14 @@
 
+Code Style
+==========
+
+The chosed code style is to use 4 spaces for indentation, no tabs
+and no mixed in tabs and spaces.
+
+IntelliJ IDEA code reformat has been ran on all source code files,
+from time to time it would be nice to reformat the code just to keep
+the source code in a coherent style.
+
 Build a snapshot
 ================
 

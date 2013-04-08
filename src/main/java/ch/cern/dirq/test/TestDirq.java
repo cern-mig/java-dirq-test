@@ -24,13 +24,12 @@ import com.lexicalscope.jewel.cli.Option;
 /**
  * Test suite used to compare and stress test different implementations
  * of directory queue across multiple programming languages.
- *
+ * <p/>
  * Used in parallel with analog implementation in Perl and Python
  * in order to validate the algorithm and their interoperability.
  *
  * @author Massimo Paladin - massimo.paladin@gmail.com
- * <br />Copyright (C) CERN 2012-2013
- *
+ *         <br />Copyright (C) CERN 2012-2013
  */
 public class TestDirq {
     private static final List<String> TESTS = Arrays.asList("add", "count", "size", "get", "iterate", "purge", "remove", "simple");
@@ -39,51 +38,51 @@ public class TestDirq {
     private List<String> tests = null;
     private TestDirQArgs options = null;
 
-    @CommandLineInterface(application="java-dirq-test")
-	private interface TestDirQArgs {
+    @CommandLineInterface(application = "java-dirq-test")
+    private interface TestDirQArgs {
 
-            @Option(shortName="c", longName="count", defaultValue="-1", description="set the elements count")
-		int getCount();
+        @Option(shortName = "c", longName = "count", defaultValue = "-1", description = "set the elements count")
+        int getCount();
 
-            @Option(shortName="d", longName="debug", description="show debugging information")
-		boolean isDebug();
+        @Option(shortName = "d", longName = "debug", description = "show debugging information")
+        boolean isDebug();
 
-            @Option(longName="header", description="set header for added elements")
-		boolean isHeader();
+        @Option(longName = "header", description = "set header for added elements")
+        boolean isHeader();
 
-            @Option(helpRequest = true, description = "display help", longName = "help")
-		boolean getHelp();
+        @Option(helpRequest = true, description = "display help", longName = "help")
+        boolean getHelp();
 
-            @Option(shortName="l", longName="list", description="tests: add count size get iterate purge remove simple")
-		boolean getList();
+        @Option(shortName = "l", longName = "list", description = "tests: add count size get iterate purge remove simple")
+        boolean getList();
 
-            @Option(longName="granularity", defaultValue="-1", description="time granularity for intermediate directories (QueueSimple)")
-		int getGranularity();
+        @Option(longName = "granularity", defaultValue = "-1", description = "time granularity for intermediate directories (QueueSimple)")
+        int getGranularity();
 
-            @Option(longName="maxlock", defaultValue="-1", description="maximum time for a locked element. 0 - locked elements will not be unlocked")
-		int getMaxlock();
+        @Option(longName = "maxlock", defaultValue = "-1", description = "maximum time for a locked element. 0 - locked elements will not be unlocked")
+        int getMaxlock();
 
-            @Option(longName="maxtemp", defaultValue="-1", description="maxmum time for a temporary element. 0 - temporary elements will not be removed")
-		int getMaxtemp();
+        @Option(longName = "maxtemp", defaultValue = "-1", description = "maxmum time for a temporary element. 0 - temporary elements will not be removed")
+        int getMaxtemp();
 
-            @Option(shortName="p", longName="path", defaultValue="", description="set the queue path")
-		String getPath();
+        @Option(shortName = "p", longName = "path", defaultValue = "", description = "set the queue path")
+        String getPath();
 
-            @Option(shortName="r", longName="random", description="randomize the body size")
-		boolean isRandom();
+        @Option(shortName = "r", longName = "random", description = "randomize the body size")
+        boolean isRandom();
 
-            @Option(longName="simple", description="test QueueSimple")
-		boolean isSimple();
+        @Option(longName = "simple", description = "test QueueSimple")
+        boolean isSimple();
 
-            @Option(shortName="s", longName="size", defaultValue="-1", description="set the body size for added elements")
-		int getSize();
+        @Option(shortName = "s", longName = "size", defaultValue = "-1", description = "set the body size for added elements")
+        int getSize();
 
-            @Option(longName="sleep", defaultValue="0", description="sleep this amount of seconds before starting")
-		int getSleep();
+        @Option(longName = "sleep", defaultValue = "0", description = "sleep this amount of seconds before starting")
+        int getSleep();
 
-            @Unparsed(name="test", defaultValue="")
-		String getTest();
-	}
+        @Unparsed(name = "test", defaultValue = "")
+        String getTest();
+    }
 
     private TestDirQArgs parseArguments(final String[] args) {
         TestDirQArgs parsed = null;
@@ -91,7 +90,7 @@ public class TestDirq {
             parsed = CliFactory.parseArguments(TestDirQArgs.class, args);
             if (parsed.getList()) {
                 System.out.print("Available tests:");
-                for (String test:TESTS) {
+                for (String test : TESTS) {
                     System.out.print(" " + test);
                 }
                 System.out.println("");
@@ -100,15 +99,15 @@ public class TestDirq {
             if (parsed.getTest().equals("")) {
                 throw new ArgumentValidationException("missing test name");
             }
-            if (! TESTS.contains(parsed.getTest())) {
+            if (!TESTS.contains(parsed.getTest())) {
                 throw new ArgumentValidationException("test name not valid: " + parsed.getTest());
             }
-            if (! parsed.isSimple()) {
+            if (!parsed.isSimple()) {
                 throw new ArgumentValidationException("DirQ normal not supported, only DirQ simple");
             }
             tests = new ArrayList<String>();
             tests.add(parsed.getTest());
-        } catch(ArgumentValidationException e) {
+        } catch (ArgumentValidationException e) {
             throw new RuntimeException(e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -118,7 +117,7 @@ public class TestDirq {
 
     private Queue newDirq() throws IOException {
         Queue queue = null;
-        if (options.isSimple())	{
+        if (options.isSimple()) {
             QueueSimple tmp = new QueueSimple(options.getPath());
             if (options.getGranularity() > -1) {
                 tmp.setGranularity(options.getGranularity());
@@ -162,8 +161,8 @@ public class TestDirq {
         debug("getting all elements in the queue (one pass)...");
         Queue queue = newDirq();
         int done = 0;
-        for (String element:queue) {
-            if (! queue.lock(element)) {
+        for (String element : queue) {
+            if (!queue.lock(element)) {
                 continue;
             }
             queue.get(element);
@@ -177,8 +176,8 @@ public class TestDirq {
         debug("iterating all elements in the queue (one pass)...");
         Queue queue = newDirq();
         int done = 0;
-        for (String element:queue) {
-            if (! queue.lock(element)) {
+        for (String element : queue) {
+            if (!queue.lock(element)) {
                 continue;
             }
             queue.unlock(element);
@@ -208,6 +207,7 @@ public class TestDirq {
 
     /**
      * Test add action on a directory queue.
+     *
      * @throws QueueException
      */
     private void testAdd() throws IOException {
@@ -236,6 +236,7 @@ public class TestDirq {
 
     /**
      * Test remove action on a directory queue.
+     *
      * @throws QueueException
      */
     private void testRemove() throws IOException {
@@ -250,8 +251,8 @@ public class TestDirq {
         if (count > -1) {
             // loop to iterate until enough are removed
             while (done < count) {
-                for (String element:queue) {
-                    if (! queue.lock(element)) {
+                for (String element : queue) {
+                    if (!queue.lock(element)) {
                         continue;
                     }
                     done++;
@@ -263,8 +264,8 @@ public class TestDirq {
             }
         } else {
             // one pass only
-            for (String element:queue) {
-                if (! queue.lock(element)) {
+            for (String element : queue) {
+                if (!queue.lock(element)) {
                     continue;
                 }
                 queue.remove(element);
@@ -342,8 +343,8 @@ public class TestDirq {
 
     /**
      * Allow to run a set of tests from unit tests.
-     * @throws QueueException
      *
+     * @throws QueueException
      * @throws QueueException
      */
     public void mainSimple() throws IOException {
@@ -368,16 +369,16 @@ public class TestDirq {
      * @throws QueueException
      */
     public void doMain(String[] args) throws InterruptedException, IOException {
-    	options = parseArguments(args);
-    	if (options.getPath().length() == 0) {
+        options = parseArguments(args);
+        if (options.getPath().length() == 0) {
             die("Option is mandatory: -p/--path");
-    	}
-    	if (options.getSleep() > 0) {
+        }
+        if (options.getSleep() > 0) {
             Thread.sleep(options.getSleep() * 1000);
-    	}
-    	for (String test:tests) {
+        }
+        for (String test : tests) {
             runTest(test);
-    	}
+        }
     }
 
     /**
@@ -394,12 +395,12 @@ public class TestDirq {
      *
      * @param message message logged
      */
-    private void debug (String message) {
-    	if (! options.isDebug()) {
+    private void debug(String message) {
+        if (!options.isDebug()) {
             return;
-    	}
-    	System.out.println(String.format("# %s TestDirq[%d]: %s", DBGDATEFMT.format(new Date()), pid, message));
-    	System.out.flush();
+        }
+        System.out.println(String.format("# %s TestDirq[%d]: %s", DBGDATEFMT.format(new Date()), pid, message));
+        System.out.flush();
     }
 
     /**

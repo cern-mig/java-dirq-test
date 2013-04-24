@@ -71,14 +71,14 @@ public class TestDirq {
         @Option(shortName = "r", longName = "random", description = "randomize the body size")
         boolean isRandom();
 
-        @Option(longName = "simple", description = "test QueueSimple")
-        boolean isSimple();
-
         @Option(shortName = "s", longName = "size", defaultValue = "-1", description = "set the body size for added elements")
         int getSize();
 
         @Option(longName = "sleep", defaultValue = "0", description = "sleep this amount of seconds before starting")
         int getSleep();
+
+        @Option(longName = "type", defaultValue = "simple", description = "DirQ type (simple|normal)")
+        String getType();
 
         @Unparsed(name = "test", defaultValue = "")
         String getTest();
@@ -102,8 +102,10 @@ public class TestDirq {
             if (!TESTS.contains(parsed.getTest())) {
                 throw new ArgumentValidationException("test name not valid: " + parsed.getTest());
             }
-            if (!parsed.isSimple()) {
-                throw new ArgumentValidationException("DirQ normal not supported, only DirQ simple");
+            if (parsed.getType().equals("normal")) {
+                throw new ArgumentValidationException("unsupported DirQ type: " + parsed.getType());
+            } else if (!parsed.getType().equals("simple")) {
+                throw new ArgumentValidationException("unexpected DirQ type: " + parsed.getType());
             }
             tests = new ArrayList<String>();
             tests.add(parsed.getTest());
@@ -117,7 +119,7 @@ public class TestDirq {
 
     private Queue newDirq() throws IOException {
         Queue queue = null;
-        if (options.isSimple()) {
+        if (options.getType().equals("simple")) {
             QueueSimple tmp = new QueueSimple(options.getPath());
             if (options.getGranularity() > -1) {
                 tmp.setGranularity(options.getGranularity());
@@ -348,7 +350,7 @@ public class TestDirq {
      * @throws QueueException
      */
     public void mainSimple() throws IOException {
-        String[] args = {"--simple", "--count", "10", "--path", "/tmp/dirq-" + pid, "--debug", "simple"};
+        String[] args = {"--count", "100", "--path", "/tmp/dirq-" + pid, "--debug", "simple"};
         options = parseArguments(args);
         File path = new File(options.getPath());
         deleteRecursively(path);

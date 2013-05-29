@@ -1,3 +1,16 @@
+/**
+ * Test suite used to compare and stress test different implementations
+ * of directory queue across multiple programming languages.
+ * <p/>
+ * Used in parallel with analog implementations in Perl and Python
+ * in order to validate the algorithm and assess interoperability.
+ *
+ * @author Massimo Paladin <massimo.paladin@gmail.com>
+ * @author Lionel Cons <lionel.cons@cern.ch>
+ *
+ * Copyright (C) CERN 2012-2013
+ */
+
 package ch.cern.dirq.test;
 
 import java.io.File;
@@ -21,16 +34,6 @@ import com.lexicalscope.jewel.cli.CliFactory;
 import com.lexicalscope.jewel.cli.CommandLineInterface;
 import com.lexicalscope.jewel.cli.Option;
 
-/**
- * Test suite used to compare and stress test different implementations
- * of directory queue across multiple programming languages.
- * <p/>
- * Used in parallel with analog implementation in Perl and Python
- * in order to validate the algorithm and their interoperability.
- *
- * @author Massimo Paladin - massimo.paladin@gmail.com
- *         <br />Copyright (C) CERN 2012-2013
- */
 public class TestDirq {
     private static final List<String> TESTS = Arrays.asList("add", "count", "size", "get", "iterate", "purge", "remove", "simple");
     private static final int pid = Posix.posix.getpid();
@@ -349,8 +352,7 @@ public class TestDirq {
      * @throws QueueException
      * @throws QueueException
      */
-    public void mainSimple() throws IOException {
-        String[] args = {"--count", "100", "--path", "/tmp/dirq-" + pid, "--debug", "simple"};
+    public void mainSimple(String[] args) throws IOException {
         options = parseArguments(args);
         File path = new File(options.getPath());
         deleteRecursively(path);
@@ -401,7 +403,8 @@ public class TestDirq {
         if (!options.isDebug()) {
             return;
         }
-        System.out.println(String.format("# %s TestDirq[%d]: %s", DBGDATEFMT.format(new Date()), pid, message));
+        System.out.println(String.format("# %s TestDirq[%d]: %s",
+                                         DBGDATEFMT.format(new Date()), pid, message));
         System.out.flush();
     }
 

@@ -1,0 +1,7 @@
+Change log for java-dirq-test:
+
+???	???
+	* [lc] changed the unit tests to use a temporary directory
+
+[lc] = Lionel Cons <lionel.cons@cern.ch>
+[mp] = Massimo Paladin <massimo.paladin@gmail.com>

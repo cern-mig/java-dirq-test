@@ -1,7 +1,10 @@
 Change log for java-dirq-test:
 
 ???	???
-	* [lc] changed the unit tests to use a temporary directory
+	* [lc] first version recording changes...
+	* [lc] changed all the tests to use a temporary directory
+	* [lc] ported to dirq 1.4
+	* [lc] add --rndhex and --umask options
 
 [lc] = Lionel Cons <lionel.cons@cern.ch>
 [mp] = Massimo Paladin <massimo.paladin@gmail.com>

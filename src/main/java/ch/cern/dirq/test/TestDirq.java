@@ -35,7 +35,8 @@ import com.lexicalscope.jewel.cli.CommandLineInterface;
 import com.lexicalscope.jewel.cli.Option;
 
 public class TestDirq {
-    private static final List<String> TESTS = Arrays.asList("add", "count", "size", "get", "iterate", "purge", "remove", "simple");
+    private static final List<String> TESTS =
+        Arrays.asList("add", "count", "size", "get", "iterate", "purge", "remove", "simple");
     private static final int pid = Posix.posix.getpid();
     private static final SimpleDateFormat DBGDATEFMT = new SimpleDateFormat("yyyy/MM/dd-kk:mm:ss");
     private List<String> tests = null;
@@ -44,44 +45,65 @@ public class TestDirq {
     @CommandLineInterface(application = "java-dirq-test")
     private interface TestDirQArgs {
 
-        @Option(shortName = "c", longName = "count", defaultValue = "-1", description = "set the elements count")
+        @Option(shortName = "c", longName = "count", defaultValue = "-1",
+                description = "set the elements count")
         int getCount();
 
-        @Option(shortName = "d", longName = "debug", description = "show debugging information")
+        @Option(shortName = "d", longName = "debug",
+                description = "show debugging information")
         boolean isDebug();
 
-        @Option(longName = "header", description = "set header for added elements")
+        @Option(longName = "header",
+                description = "set header for added elements")
         boolean isHeader();
 
-        @Option(helpRequest = true, description = "display help", longName = "help")
+        @Option(helpRequest = true, longName = "help",
+                description = "display help")
         boolean getHelp();
 
-        @Option(shortName = "l", longName = "list", description = "tests: add count size get iterate purge remove simple")
+        @Option(shortName = "l", longName = "list",
+                description = "tests: add count size get iterate purge remove simple")
         boolean getList();
 
-        @Option(longName = "granularity", defaultValue = "-1", description = "time granularity for intermediate directories (QueueSimple)")
+        @Option(longName = "granularity", defaultValue = "-1",
+                description = "time granularity for intermediate directories (QueueSimple)")
         int getGranularity();
 
-        @Option(longName = "maxlock", defaultValue = "-1", description = "maximum time for a locked element. 0 - locked elements will not be unlocked")
+        @Option(longName = "maxlock", defaultValue = "-1",
+                description = "maximum time for a locked element (or 0 to disable purging)")
         int getMaxlock();
 
-        @Option(longName = "maxtemp", defaultValue = "-1", description = "maxmum time for a temporary element. 0 - temporary elements will not be removed")
+        @Option(longName = "maxtemp", defaultValue = "-1",
+                description = "maxmum time for a temporary element (or 0 to disable purging)")
         int getMaxtemp();
 
-        @Option(shortName = "p", longName = "path", defaultValue = "", description = "set the queue path")
+        @Option(shortName = "p", longName = "path", defaultValue = "",
+                description = "set the queue path")
         String getPath();
 
-        @Option(shortName = "r", longName = "random", description = "randomize the body size")
+        @Option(shortName = "r", longName = "random",
+                description = "randomize the body size")
         boolean isRandom();
 
-        @Option(shortName = "s", longName = "size", defaultValue = "-1", description = "set the body size for added elements")
+        @Option(longName = "rndhex", defaultValue = "-1",
+                description = "set the random hexadecimal digit for the queue")
+        int getRndhex();
+
+        @Option(shortName = "s", longName = "size", defaultValue = "-1",
+                description = "set the body size for added elements")
         int getSize();
 
-        @Option(longName = "sleep", defaultValue = "0", description = "sleep this amount of seconds before starting")
+        @Option(longName = "sleep", defaultValue = "0",
+                description = "sleep this amount of seconds before starting")
         int getSleep();
 
-        @Option(longName = "type", defaultValue = "simple", description = "DirQ type (simple|normal)")
+        @Option(longName = "type", defaultValue = "simple",
+                description = "DirQ type (simple|normal)")
         String getType();
+
+        @Option(longName = "umask", defaultValue = "-1",
+                description = "set the umask for the queue")
+        int getUmask();
 
         @Unparsed(name = "test", defaultValue = "")
         String getTest();
@@ -121,16 +143,15 @@ public class TestDirq {
     }
 
     private Queue newDirq() throws IOException {
-        Queue queue = null;
-        if (options.getType().equals("simple")) {
-            QueueSimple tmp = new QueueSimple(options.getPath());
-            if (options.getGranularity() > -1) {
-                tmp.setGranularity(options.getGranularity());
-            }
-            queue = tmp;
-        } else {
+        if (!options.getType().equals("simple"))
             throw new IllegalArgumentException("only DirQ simple is supported");
-        }
+        QueueSimple queue = new QueueSimple(options.getPath());
+        if (options.getGranularity() > -1)
+            queue.setGranularity(options.getGranularity());
+        if (options.getRndhex() > -1)
+            queue.setRndHex(options.getRndhex());
+        if (options.getUmask() > -1)
+            queue.setUmask(options.getUmask());
         return queue;
     }
 
@@ -152,14 +173,13 @@ public class TestDirq {
     private void testPurge() throws IOException {
         debug("purging the queue...");
         Queue queue = newDirq();
-        Map<String, Integer> opts = new HashMap<String, Integer>();
-        if (options.getMaxlock() > -1) {
-            opts.put("maxLock", options.getMaxlock());
-        }
-        if (options.getMaxtemp() > -1) {
-            opts.put("maxTemp", options.getMaxtemp());
-        }
-        queue.purge(opts);
+        Integer maxLock = null;
+        Integer maxTemp = null;
+        if (options.getMaxlock() > -1)
+            maxLock = options.getMaxlock();
+        if (options.getMaxtemp() > -1)
+            maxTemp = options.getMaxtemp();
+        queue.purge(maxLock, maxTemp);
     }
 
     private void testGet() throws IOException {

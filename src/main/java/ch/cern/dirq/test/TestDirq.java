@@ -5,9 +5,8 @@
  * Used in parallel with analog implementations in Perl and Python
  * in order to validate the algorithm and assess interoperability.
  *
- * @author Massimo Paladin <massimo.paladin@gmail.com>
- * @author Lionel Cons <lionel.cons@cern.ch>
- *
+ * @author Lionel Cons &lt;lionel.cons@cern.ch&gt;
+ * @author Massimo Paladin &lt;massimo.paladin@gmail.com&gt;
  * Copyright (C) CERN 2012-2013
  */
 
@@ -19,7 +18,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

@@ -1,6 +1,6 @@
 Change log for java-dirq-test:
 
-???	???
+1.3	Wed Apr  1 2015
 	* [lc] first version recording changes...
 	* [lc] changed all the tests to use a temporary directory
 	* [lc] ported to dirq 1.4

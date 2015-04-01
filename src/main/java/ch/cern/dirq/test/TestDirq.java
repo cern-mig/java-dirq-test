@@ -7,7 +7,7 @@
  *
  * @author Lionel Cons &lt;lionel.cons@cern.ch&gt;
  * @author Massimo Paladin &lt;massimo.paladin@gmail.com&gt;
- * Copyright (C) CERN 2012-2013
+ * Copyright (C) CERN 2012-2015
  */
 
 package ch.cern.dirq.test;
@@ -165,7 +165,7 @@ public class TestDirq {
     private void testCount() throws IOException {
         Queue queue = newDirq();
         int count = queue.count();
-        debug("queue has " + count + " elements");
+        debug(String.format("queue has %d elements", count));
     }
 
     private void testPurge() throws IOException {
@@ -192,7 +192,7 @@ public class TestDirq {
             queue.unlock(element);
             done++;
         }
-        debug(String.format("%d elements browsed", done));
+        debug(String.format("got %d elements", done));
     }
 
     private void testIterate() throws IOException {
@@ -206,7 +206,7 @@ public class TestDirq {
             queue.unlock(element);
             done++;
         }
-        debug(String.format("%d elements locked/unlocked", done));
+        debug(String.format("iterated %d elements", done));
     }
 
     private String newBody(int size, boolean random) {
@@ -238,7 +238,7 @@ public class TestDirq {
         int size = options.getSize();
         int count = options.getCount();
         if (count > -1) {
-            debug(String.format("adding %d elements to the queue", count));
+            debug(String.format("adding %d elements to the queue...", count));
         } else {
             debug("adding elements to the queue forever...");
         }
@@ -254,7 +254,7 @@ public class TestDirq {
             }
             queue.add(element);
         }
-        debug(String.format("%d elements added", done));
+        debug(String.format("added %d elements", done));
     }
 
     /**
@@ -294,7 +294,7 @@ public class TestDirq {
                 queue.remove(element);
                 done++;
             }
-            debug(String.format("%d elements removed", done));
+            debug(String.format("removed %d elements", done));
         }
     }
 
@@ -421,8 +421,8 @@ public class TestDirq {
         if (!options.isDebug()) {
             return;
         }
-        System.out.println(String.format("# %s TestDirq[%d]: %s",
-                                         DBGDATEFMT.format(new Date()), pid, message));
+        System.out.print(String.format("# %s TestDirq[%d]: %s\n",
+                                       DBGDATEFMT.format(new Date()), pid, message));
         System.out.flush();
     }
 

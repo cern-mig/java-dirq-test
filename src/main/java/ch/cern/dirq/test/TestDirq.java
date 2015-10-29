@@ -24,7 +24,6 @@ import java.util.Map;
 import ch.cern.dirq.Queue;
 import ch.cern.dirq.QueueSimple;
 import ch.cern.mig.posix.Posix;
-import ch.cern.mig.utils.ProcessUtils;
 
 import com.lexicalscope.jewel.cli.Unparsed;
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
@@ -151,15 +150,6 @@ public class TestDirq {
         if (options.getUmask() > -1)
             queue.setUmask(options.getUmask());
         return queue;
-    }
-
-    private void testSize() {
-        Map<String, String> res = ProcessUtils.executeIt("du -ks " + options.getPath());
-        int exitValue = Integer.parseInt(res.get("exitValue"));
-        if (exitValue > 0) {
-            die("du failed: " + exitValue);
-        }
-        debug("du output: " + res.get("out"));
     }
 
     private void testCount() throws IOException {
@@ -308,7 +298,6 @@ public class TestDirq {
         }
         testAdd();
         testCount();
-        testSize();
         testPurge();
         testGet();
         testRemove();
@@ -336,8 +325,6 @@ public class TestDirq {
             testRemove();
         } else if (name.equals("simple")) {
             testSimple();
-        } else if (name.equals("size")) {
-            testSize();
         } else {
             throw new IllegalArgumentException("unexpected test name: " + name);
         }

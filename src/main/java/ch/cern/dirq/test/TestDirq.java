@@ -240,7 +240,7 @@ public class TestDirq {
             if (size > -1) {
                 element = newBody(size, random);
             } else {
-                element = "Element " + done;
+                element = "Element " + done + " ;-)\n";
             }
             queue.add(element);
         }

@@ -3,9 +3,9 @@ notifications:
     - mig-travis@cern.ch
 language: java
 jdk:
-  - openjdk6
   - openjdk7
   - oraclejdk7
+  - oraclejdk8
 before_install:
   # clone java-dirq repo
   - git clone --depth=100 --quiet --branch=master git://github.com/cern-mig/java-dirq.git java-dirq-git

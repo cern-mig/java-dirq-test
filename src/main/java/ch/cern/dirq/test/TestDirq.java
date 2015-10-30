@@ -33,7 +33,7 @@ import com.lexicalscope.jewel.cli.Option;
 
 public class TestDirq {
     private static final List<String> TESTS =
-        Arrays.asList("add", "count", "size", "get", "iterate", "purge", "remove", "simple");
+        Arrays.asList("add", "count", "get", "iterate", "purge", "remove", "simple");
     private static final int pid = Posix.posix.getpid();
     private static final SimpleDateFormat DBGDATEFMT = new SimpleDateFormat("yyyy/MM/dd-kk:mm:ss");
     private List<String> tests = null;
@@ -139,16 +139,20 @@ public class TestDirq {
         return parsed;
     }
 
-    private Queue newDirq() throws IOException {
-        if (!options.getType().equals("simple"))
+    private QueueSimple newDirq() throws IOException {
+        if (!options.getType().equals("simple")) {
             throw new IllegalArgumentException("only DirQ simple is supported");
+        }
         QueueSimple queue = new QueueSimple(options.getPath());
-        if (options.getGranularity() > -1)
+        if (options.getGranularity() > -1) {
             queue.setGranularity(options.getGranularity());
-        if (options.getRndhex() > -1)
+        }
+        if (options.getRndhex() > -1) {
             queue.setRndHex(options.getRndhex());
-        if (options.getUmask() > -1)
+        }
+        if (options.getUmask() > -1) {
             queue.setUmask(options.getUmask());
+        }
         return queue;
     }
 
@@ -160,14 +164,14 @@ public class TestDirq {
 
     private void testPurge() throws IOException {
         debug("purging the queue...");
-        Queue queue = newDirq();
-        Integer maxLock = null;
-        Integer maxTemp = null;
-        if (options.getMaxlock() > -1)
-            maxLock = options.getMaxlock();
-        if (options.getMaxtemp() > -1)
-            maxTemp = options.getMaxtemp();
-        queue.purge(maxLock, maxTemp);
+        QueueSimple queue = newDirq();
+        if (options.getMaxlock() > -1) {
+            queue.setMaxLock(options.getMaxlock());
+        }
+        if (options.getMaxtemp() > -1) {
+            queue.setMaxTemp(options.getMaxtemp());
+        }
+        queue.purge();
     }
 
     private void testGet() throws IOException {
@@ -354,8 +358,7 @@ public class TestDirq {
     /**
      * Allow to run a set of tests from unit tests.
      *
-     * @throws QueueException
-     * @throws QueueException
+     * @throws IOException
      */
     public void mainSimple(String[] args) throws IOException {
         options = parseArguments(args);

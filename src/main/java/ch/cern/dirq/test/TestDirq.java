@@ -14,6 +14,8 @@ package ch.cern.dirq.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +25,6 @@ import java.util.Map;
 
 import ch.cern.dirq.Queue;
 import ch.cern.dirq.QueueSimple;
-import ch.cern.mig.posix.Posix;
 
 import com.lexicalscope.jewel.cli.Unparsed;
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
@@ -34,10 +35,17 @@ import com.lexicalscope.jewel.cli.Option;
 public class TestDirq {
     private static final List<String> TESTS =
         Arrays.asList("add", "count", "get", "iterate", "purge", "remove", "simple");
-    private static final int pid = Posix.posix.getpid();
-    private static final SimpleDateFormat DBGDATEFMT = new SimpleDateFormat("yyyy/MM/dd-kk:mm:ss");
+    private static final SimpleDateFormat DBGDATEFMT =
+        new SimpleDateFormat("yyyy/MM/dd-kk:mm:ss");
+    private static long pid = 0;
     private List<String> tests = null;
     private TestDirQArgs options = null;
+
+    static {
+        RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
+        String jvmName = runtimeBean.getName();
+        pid = Long.valueOf(jvmName.split("@")[0]);
+    }
 
     @CommandLineInterface(application = "java-dirq-test")
     private interface TestDirQArgs {

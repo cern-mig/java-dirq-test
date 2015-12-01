@@ -1,15 +1,3 @@
-/**
- * Test suite used to compare and stress test different implementations
- * of directory queue across multiple programming languages.
- * <p/>
- * Used in parallel with analog implementations in Perl and Python
- * in order to validate the algorithm and assess interoperability.
- *
- * @author Lionel Cons &lt;lionel.cons@cern.ch&gt;
- * @author Massimo Paladin &lt;massimo.paladin@gmail.com&gt;
- * Copyright (C) CERN 2012-2015
- */
-
 package ch.cern.dirq.test;
 
 import java.io.File;
@@ -21,25 +9,40 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import ch.cern.dirq.Queue;
-import ch.cern.dirq.QueueSimple;
-
-import com.lexicalscope.jewel.cli.Unparsed;
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
 import com.lexicalscope.jewel.cli.CliFactory;
 import com.lexicalscope.jewel.cli.CommandLineInterface;
 import com.lexicalscope.jewel.cli.Option;
+import com.lexicalscope.jewel.cli.Unparsed;
 
+import ch.cern.dirq.Queue;
+import ch.cern.dirq.QueueSimple;
+
+/**
+ * Test suite used to compare and stress test different implementations
+ * of directory queue across multiple programming languages.
+ * <p/>
+ * Used in parallel with analog implementations in Perl and Python
+ * in order to validate the algorithm and assess interoperability.
+ *
+ * @author Lionel Cons &lt;lionel.cons@cern.ch&gt;
+ * @author Massimo Paladin &lt;massimo.paladin@gmail.com&gt;
+ * Copyright (C) CERN 2012-2015
+ */
 public class TestDirq {
+
     private static final List<String> TESTS =
         Arrays.asList("add", "count", "get", "iterate", "purge", "remove", "simple");
     private static final SimpleDateFormat DBGDATEFMT =
         new SimpleDateFormat("yyyy/MM/dd-kk:mm:ss");
-    private static long pid = 0;
-    private List<String> tests = null;
-    private TestDirQArgs options = null;
+    private static final int IRWIN_HALL_COUNT = 6;
+    private static final long SECOND = 1000;
+
+    private static long pid;
+
+    private List<String> tests;
+    private TestDirQArgs options;
 
     static {
         RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
@@ -47,6 +50,9 @@ public class TestDirq {
         pid = Long.valueOf(jvmName.split("@")[0]);
     }
 
+    /**
+     * TestDirq command line options.
+     */
     @CommandLineInterface(application = "java-dirq-test")
     private interface TestDirQArgs {
 
@@ -130,12 +136,15 @@ public class TestDirq {
                 throw new ArgumentValidationException("missing test name");
             }
             if (!TESTS.contains(parsed.getTest())) {
-                throw new ArgumentValidationException("test name not valid: " + parsed.getTest());
+                throw new ArgumentValidationException("test name not valid: "
+                                                      + parsed.getTest());
             }
             if (parsed.getType().equals("normal")) {
-                throw new ArgumentValidationException("unsupported DirQ type: " + parsed.getType());
+                throw new ArgumentValidationException("unsupported DirQ type: "
+                                                      + parsed.getType());
             } else if (!parsed.getType().equals("simple")) {
-                throw new ArgumentValidationException("unexpected DirQ type: " + parsed.getType());
+                throw new ArgumentValidationException("unexpected DirQ type: "
+                                                      + parsed.getType());
             }
             tests = new ArrayList<String>();
             tests.add(parsed.getTest());
@@ -211,21 +220,24 @@ public class TestDirq {
         debug(String.format("iterated %d elements", done));
     }
 
-    private String newBody(int size, boolean random) {
+    private String newBody(final int size, final boolean random) {
+        int asize;
         if (random) {
             // see Irwin-Hall in http://en.wikipedia.org/wiki/Normal_distribution
             double rnd = 0;
-            for (int i = 0; i < 12; i++) {
+            for (int i = 0; i < IRWIN_HALL_COUNT * 2; i++) {
                 rnd += Math.random();
             }
-            rnd -= 6;
-            rnd *= size / 6;
-            size += (int) rnd;
+            rnd -= IRWIN_HALL_COUNT;
+            rnd *= size / IRWIN_HALL_COUNT;
+            asize = size + (int) rnd;
+        } else {
+            asize = size;
         }
-        if (size < 1) {
+        if (asize < 1) {
             return "";
         }
-        char[] charArray = new char[size];
+        char[] charArray = new char[asize];
         Arrays.fill(charArray, 'A');
         return new String(charArray);
     }
@@ -321,7 +333,7 @@ public class TestDirq {
         deleteRecursively(path);
     }
 
-    private void runTest(String name) throws IOException {
+    private void runTest(final String name) throws IOException {
         long t1 = System.currentTimeMillis();
         if (name.equals("add")) {
             testAdd();
@@ -341,7 +353,7 @@ public class TestDirq {
             throw new IllegalArgumentException("unexpected test name: " + name);
         }
         long t2 = System.currentTimeMillis();
-        debug(String.format("done in %.4f seconds", (t2 - t1) / 1000.0));
+        debug(String.format("done in %.4f seconds", (t2 - t1) / (double) SECOND));
     }
 
     /**
@@ -350,7 +362,7 @@ public class TestDirq {
      * @param path path to be removed
      * @return return true if removal succeed
      */
-    public static boolean deleteRecursively(File path) {
+    public static boolean deleteRecursively(final File path) {
         if (path.isDirectory()) {
             String[] children = path.list();
             for (int i = 0; i < children.length; i++) {
@@ -368,7 +380,7 @@ public class TestDirq {
      *
      * @throws IOException
      */
-    public void mainSimple(String[] args) throws IOException {
+    public void mainSimple(final String[] args) throws IOException {
         options = parseArguments(args);
         File path = new File(options.getPath());
         deleteRecursively(path);
@@ -388,13 +400,13 @@ public class TestDirq {
      * @throws InterruptedException
      * @throws QueueException
      */
-    public void doMain(String[] args) throws InterruptedException, IOException {
+    public void doMain(final String[] args) throws InterruptedException, IOException {
         options = parseArguments(args);
         if (options.getPath().length() == 0) {
             die("Option is mandatory: -p/--path");
         }
         if (options.getSleep() > 0) {
-            Thread.sleep(options.getSleep() * 1000);
+            Thread.sleep(options.getSleep() * SECOND);
         }
         for (String test : tests) {
             runTest(test);
@@ -406,7 +418,7 @@ public class TestDirq {
      *
      * @param message message printed before dieing
      */
-    private static void die(String message) {
+    private static void die(final String message) {
         throw new RuntimeException(message);
     }
 
@@ -415,7 +427,7 @@ public class TestDirq {
      *
      * @param message message logged
      */
-    private void debug(String message) {
+    private void debug(final String message) {
         if (!options.isDebug()) {
             return;
         }
@@ -431,7 +443,8 @@ public class TestDirq {
      * @throws QueueException
      * @throws InterruptedException
      */
-    public static void main(String[] args) throws InterruptedException, IOException {
+    public static void main(final String[] args) throws InterruptedException, IOException {
         new TestDirq().doMain(args);
     }
+
 }

@@ -34,12 +34,11 @@ public class TestDirq {
 
     private static final List<String> TESTS =
         Arrays.asList("add", "count", "get", "iterate", "purge", "remove", "simple");
-    private static final SimpleDateFormat DBGDATEFMT =
-        new SimpleDateFormat("yyyy/MM/dd-kk:mm:ss");
+    private static final String DATE_FORMAT = "yyyy/MM/dd-kk:mm:ss";
     private static final int IRWIN_HALL_COUNT = 6;
     private static final long SECOND = 1000;
 
-    private static long pid;
+    private static Long pid;
 
     private List<String> tests;
     private TestDirQArgs options;
@@ -126,28 +125,28 @@ public class TestDirq {
             parsed = CliFactory.parseArguments(TestDirQArgs.class, args);
             if (parsed.getList()) {
                 System.out.print("Available tests:");
-                for (String test : TESTS) {
+                for (String test: TESTS) {
                     System.out.print(" " + test);
                 }
                 System.out.println("");
-                System.exit(0);
+            } else {
+                if (parsed.getTest().equals("")) {
+                    throw new ArgumentValidationException("missing test name");
+                }
+                if (!TESTS.contains(parsed.getTest())) {
+                    throw new ArgumentValidationException("invalid test name: "
+                                                          + parsed.getTest());
+                }
+                if (parsed.getType().equals("normal")) {
+                    throw new ArgumentValidationException("unsupported DirQ type: "
+                                                          + parsed.getType());
+                } else if (!parsed.getType().equals("simple")) {
+                    throw new ArgumentValidationException("unexpected DirQ type: "
+                                                          + parsed.getType());
+                }
+                tests = new ArrayList<String>();
+                tests.add(parsed.getTest());
             }
-            if (parsed.getTest().equals("")) {
-                throw new ArgumentValidationException("missing test name");
-            }
-            if (!TESTS.contains(parsed.getTest())) {
-                throw new ArgumentValidationException("test name not valid: "
-                                                      + parsed.getTest());
-            }
-            if (parsed.getType().equals("normal")) {
-                throw new ArgumentValidationException("unsupported DirQ type: "
-                                                      + parsed.getType());
-            } else if (!parsed.getType().equals("simple")) {
-                throw new ArgumentValidationException("unexpected DirQ type: "
-                                                      + parsed.getType());
-            }
-            tests = new ArrayList<String>();
-            tests.add(parsed.getTest());
         } catch (ArgumentValidationException e) {
             throw new RuntimeException(e.getMessage());
         } catch (Exception e) {
@@ -195,7 +194,7 @@ public class TestDirq {
         debug("getting all elements in the queue (one pass)...");
         Queue queue = newDirq();
         int done = 0;
-        for (String element : queue) {
+        for (String element: queue) {
             if (!queue.lock(element)) {
                 continue;
             }
@@ -210,7 +209,7 @@ public class TestDirq {
         debug("iterating all elements in the queue (one pass)...");
         Queue queue = newDirq();
         int done = 0;
-        for (String element : queue) {
+        for (String element: queue) {
             if (!queue.lock(element)) {
                 continue;
             }
@@ -229,7 +228,8 @@ public class TestDirq {
                 rnd += Math.random();
             }
             rnd -= IRWIN_HALL_COUNT;
-            rnd *= size / IRWIN_HALL_COUNT;
+            rnd /= IRWIN_HALL_COUNT;
+            rnd *= size;
             asize = size + (int) rnd;
         } else {
             asize = size;
@@ -288,7 +288,7 @@ public class TestDirq {
         if (count > -1) {
             // loop to iterate until enough are removed
             while (done < count) {
-                for (String element : queue) {
+                for (String element: queue) {
                     if (!queue.lock(element)) {
                         continue;
                     }
@@ -301,7 +301,7 @@ public class TestDirq {
             }
         } else {
             // one pass only
-            for (String element : queue) {
+            for (String element: queue) {
                 if (!queue.lock(element)) {
                     continue;
                 }
@@ -326,11 +326,12 @@ public class TestDirq {
         testGet();
         testRemove();
         testPurge();
-        int num = path.listFiles().length;
+        String[] children = path.list();
+        int num = children == null ? 0 : children.length;
         if (num != 1) {
             throw new IllegalArgumentException("unexpected subdirs number: " + num);
         }
-        deleteRecursively(path);
+        recursiveDelete(path);
     }
 
     private void runTest(final String name) throws IOException {
@@ -362,12 +363,14 @@ public class TestDirq {
      * @param path path to be removed
      * @return return true if removal succeed
      */
-    public static boolean deleteRecursively(final File path) {
+    public static boolean recursiveDelete(final File path) {
         if (path.isDirectory()) {
             String[] children = path.list();
+            if (children == null) {
+                return false;
+            }
             for (int i = 0; i < children.length; i++) {
-                boolean success = deleteRecursively(new File(path, children[i]));
-                if (!success) {
+                if (!recursiveDelete(new File(path, children[i]))) {
                     return false;
                 }
             }
@@ -383,14 +386,14 @@ public class TestDirq {
     public void mainSimple(final String[] args) throws IOException {
         options = parseArguments(args);
         File path = new File(options.getPath());
-        deleteRecursively(path);
+        recursiveDelete(path);
         try {
             testSimple();
         } catch (IOException e) {
-            deleteRecursively(path);
+            recursiveDelete(path);
             throw e;
         }
-        deleteRecursively(path);
+        recursiveDelete(path);
     }
 
     /**
@@ -402,14 +405,16 @@ public class TestDirq {
      */
     public void doMain(final String[] args) throws InterruptedException, IOException {
         options = parseArguments(args);
-        if (options.getPath().length() == 0) {
-            die("Option is mandatory: -p/--path");
-        }
-        if (options.getSleep() > 0) {
-            Thread.sleep(options.getSleep() * SECOND);
-        }
-        for (String test : tests) {
-            runTest(test);
+        if (!options.getList()) {
+            if (options.getPath().length() == 0) {
+                die("Option is mandatory: -p/--path");
+            }
+            if (options.getSleep() > 0) {
+                Thread.sleep(options.getSleep() * SECOND);
+            }
+            for (String test: tests) {
+                runTest(test);
+            }
         }
     }
 
@@ -428,12 +433,11 @@ public class TestDirq {
      * @param message message logged
      */
     private void debug(final String message) {
-        if (!options.isDebug()) {
-            return;
+        if (options.isDebug()) {
+            String now = new SimpleDateFormat(DATE_FORMAT).format(new Date());
+            System.out.printf("# %s TestDirq[%d]: %s%n", now, pid, message);
+            System.out.flush();
         }
-        System.out.print(String.format("# %s TestDirq[%d]: %s\n",
-                                       DBGDATEFMT.format(new Date()), pid, message));
-        System.out.flush();
     }
 
     /**

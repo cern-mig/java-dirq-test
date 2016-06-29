@@ -27,5 +27,4 @@ License and Copyright
 
 Apache License, Version 2.0
 
-Copyright (C) 2012-2015 CERN
-
+Copyright (C) CERN 2012-2016

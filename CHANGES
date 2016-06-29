@@ -1,5 +1,8 @@
 Change log for java-dirq-test:
 
+???	???
+	* [lc] now testing dirq 1.8
+
 1.4	Tue Dec  1 2015
 	* [lc] ported to dirq 1.7
 	* [lc] major code cleanup

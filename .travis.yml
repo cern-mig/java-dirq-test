@@ -6,7 +6,6 @@ jdk:
   - openjdk9
   - openjdk11
   - openjdk13
-  - oraclejdk9
   - oraclejdk11
   - oraclejdk13
 before_install:
@@ -15,4 +14,4 @@ before_install:
   - cd java-dirq-git
   - mvn clean install
   - cd ../
-
+  - rm -fr java-dirq-git

@@ -22,7 +22,7 @@ import ch.cern.dirq.QueueSimple;
 /**
  * Test suite used to compare and stress test different implementations
  * of directory queue across multiple programming languages.
- * <p/>
+ * <br>
  * Used in parallel with analog implementations in Perl and Python
  * in order to validate the algorithm and assess interoperability.
  *
@@ -245,7 +245,7 @@ public class TestDirq {
     /**
      * Test add action on a directory queue.
      *
-     * @throws QueueException
+     * @throws IOException
      */
     private void testAdd() throws IOException {
         boolean random = options.isRandom();
@@ -274,7 +274,7 @@ public class TestDirq {
     /**
      * Test remove action on a directory queue.
      *
-     * @throws QueueException
+     * @throws IOException
      */
     private void testRemove() throws IOException {
         int count = options.getCount();
@@ -401,7 +401,7 @@ public class TestDirq {
      *
      * @param args command line arguments
      * @throws InterruptedException
-     * @throws QueueException
+     * @throws IOException
      */
     public void doMain(final String[] args) throws InterruptedException, IOException {
         options = parseArguments(args);
@@ -444,8 +444,8 @@ public class TestDirq {
      * Main called from command line.
      *
      * @param args given command line arguments
-     * @throws QueueException
      * @throws InterruptedException
+     * @throws IOException
      */
     public static void main(final String[] args) throws InterruptedException, IOException {
         new TestDirq().doMain(args);

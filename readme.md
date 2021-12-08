@@ -1,7 +1,7 @@
 java-dirq-test
 ==============
 
-[![Build Status](https://secure.travis-ci.org/cern-mig/java-dirq-test.png)](http://travis-ci.org/cern-mig/java-dirq-test)
+![Build Status](https://github.com/cern-mig/java-dirq-test/actions/workflows/test.yml/badge.svg)
 
 
 Overview
@@ -27,4 +27,4 @@ License and Copyright
 
 Apache License, Version 2.0
 
-Copyright (C) CERN 2012-2020
+Copyright (C) CERN 2012-2021

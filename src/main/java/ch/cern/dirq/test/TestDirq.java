@@ -5,19 +5,17 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
-import com.lexicalscope.jewel.cli.ArgumentValidationException;
-import com.lexicalscope.jewel.cli.CliFactory;
-import com.lexicalscope.jewel.cli.CommandLineInterface;
-import com.lexicalscope.jewel.cli.Option;
-import com.lexicalscope.jewel.cli.Unparsed;
+import java.util.concurrent.Callable;
 
 import ch.cern.dirq.Queue;
 import ch.cern.dirq.QueueSimple;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Test suite used to compare and stress test different implementations
@@ -30,7 +28,9 @@ import ch.cern.dirq.QueueSimple;
  * @author Massimo Paladin &lt;massimo.paladin@gmail.com&gt;
  * Copyright (C) CERN 2012-2024
  */
-public class TestDirq {
+@Command(name = "java-dirq-test",
+         description = "directory queue test suite (Java)")
+public class TestDirq implements Callable<Integer> {
 
     private static final List<String> TESTS =
         Arrays.asList("add", "count", "get", "iterate", "purge", "remove", "simple");
@@ -41,7 +41,6 @@ public class TestDirq {
     private static Long pid;
 
     private List<String> tests;
-    private TestDirQArgs options;
 
     static {
         RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
@@ -49,125 +48,109 @@ public class TestDirq {
         pid = Long.valueOf(jvmName.split("@")[0]);
     }
 
-    /**
-     * TestDirq command line options.
-     */
-    @CommandLineInterface(application = "java-dirq-test")
-    private interface TestDirQArgs {
+    @Option(names = {"-c", "--count"},
+            description = "set the elements count")
+    private Integer optCount = -1;
+    @Option(names = {"-d", "--debug"},
+            description = "show debugging information")
+    private boolean optDebug;
+    @Option(names = {"--header"},
+            description = "set header for added elements")
+    private boolean optHeader;
+    @Option(names = {"-h", "--help"}, usageHelp = true,
+            description = "show some help")
+    private boolean optHelp;
+    @Option(names = {"-l", "--list"},
+            description = "list the available tests")
+    private boolean optList;
+    @Option(names = {"--granularity"},
+            description = "time granularity for intermediate directories (QueueSimple)")
+    private Integer optGranularity = -1;
+    @Option(names = {"--maxlock"},
+            description = "maximum time for a locked element (or 0 to disable purging)")
+    private Integer optMaxLock = -1;
+    @Option(names = {"--maxtemp"},
+            description = "maxmum time for a temporary element (or 0 to disable purging)")
+    private Integer optMaxTemp = -1;
+    @Option(names = {"-p", "--path"},
+            description = "set the queue path")
+    private String optPath = "";
+    @Option(names = {"-r", "--random"},
+            description = "randomize the body size")
+    private boolean optRandom;
+    @Option(names = {"--rndhex"},
+            description = "set the random hexadecimal digit for the queue")
+    private Integer optRndHex = -1;
+    @Option(names = {"-s", "--size"},
+            description = "set the body size for added elements")
+    private Integer optSize = -1;
+    @Option(names = {"--sleep"},
+            description = "sleep this amount of seconds before starting")
+    private Integer optSleep = 0;
+    @Option(names = {"--type"},
+            description = "directory queue type (simple|normal")
+    private String optType = "simple";
+    @Option(names = {"--umask"},
+            description = "set the umask for the queue")
+    private Integer optUmask = -1;
+    @Parameters(index = "0", description = "test to execute")
+    private String optTest;
 
-        @Option(shortName = "c", longName = "count", defaultValue = "-1",
-                description = "set the elements count")
-        int getCount();
-
-        @Option(shortName = "d", longName = "debug",
-                description = "show debugging information")
-        boolean isDebug();
-
-        @Option(longName = "header",
-                description = "set header for added elements")
-        boolean isHeader();
-
-        @Option(helpRequest = true, longName = "help",
-                description = "display help")
-        boolean getHelp();
-
-        @Option(shortName = "l", longName = "list",
-                description = "tests: add count size get iterate purge remove simple")
-        boolean getList();
-
-        @Option(longName = "granularity", defaultValue = "-1",
-                description = "time granularity for intermediate directories (QueueSimple)")
-        int getGranularity();
-
-        @Option(longName = "maxlock", defaultValue = "-1",
-                description = "maximum time for a locked element (or 0 to disable purging)")
-        int getMaxlock();
-
-        @Option(longName = "maxtemp", defaultValue = "-1",
-                description = "maxmum time for a temporary element (or 0 to disable purging)")
-        int getMaxtemp();
-
-        @Option(shortName = "p", longName = "path", defaultValue = "",
-                description = "set the queue path")
-        String getPath();
-
-        @Option(shortName = "r", longName = "random",
-                description = "randomize the body size")
-        boolean isRandom();
-
-        @Option(longName = "rndhex", defaultValue = "-1",
-                description = "set the random hexadecimal digit for the queue")
-        int getRndhex();
-
-        @Option(shortName = "s", longName = "size", defaultValue = "-1",
-                description = "set the body size for added elements")
-        int getSize();
-
-        @Option(longName = "sleep", defaultValue = "0",
-                description = "sleep this amount of seconds before starting")
-        int getSleep();
-
-        @Option(longName = "type", defaultValue = "simple",
-                description = "DirQ type (simple|normal)")
-        String getType();
-
-        @Option(longName = "umask", defaultValue = "-1",
-                description = "set the umask for the queue")
-        int getUmask();
-
-        @Unparsed(name = "test", defaultValue = "")
-        String getTest();
+    @Override
+    public Integer call() throws Exception {
+        if (optList) {
+            System.out.print("Available tests:");
+            for (String test: TESTS) {
+                System.out.print(" " + test);
+            }
+            System.out.println("");
+            return 0;
+        }
+        try {
+            if (!TESTS.contains(optTest)) {
+                die("invalid test name: " + optTest);
+            }
+            if (optType.equals("normal")) {
+                die("unsupported directory queue type: " + optType);
+            } else if (!optType.equals("simple")) {
+                die("invalid directory queue type: " + optType);
+            }
+            if (optPath.equals("")) {
+                die("missing path option");
+            }
+            if (optSleep > 0) {
+                Thread.sleep(optSleep * SECOND);
+            }
+            runTest(optTest);
+        } catch (Exception e) {
+            if (optDebug) {
+                e.printStackTrace();
+            } else {
+                System.err.printf("java-dirq-test: %s%n", e.getMessage());
+            }
+            return 1;
+       }
+        return 0;
     }
 
-    private TestDirQArgs parseArguments(final String[] args) {
-        TestDirQArgs parsed = null;
-        try {
-            parsed = CliFactory.parseArguments(TestDirQArgs.class, args);
-            if (parsed.getList()) {
-                System.out.print("Available tests:");
-                for (String test: TESTS) {
-                    System.out.print(" " + test);
-                }
-                System.out.println("");
-            } else {
-                if (parsed.getTest().equals("")) {
-                    throw new ArgumentValidationException("missing test name");
-                }
-                if (!TESTS.contains(parsed.getTest())) {
-                    throw new ArgumentValidationException("invalid test name: "
-                                                          + parsed.getTest());
-                }
-                if (parsed.getType().equals("normal")) {
-                    throw new ArgumentValidationException("unsupported DirQ type: "
-                                                          + parsed.getType());
-                } else if (!parsed.getType().equals("simple")) {
-                    throw new ArgumentValidationException("unexpected DirQ type: "
-                                                          + parsed.getType());
-                }
-                tests = new ArrayList<String>();
-                tests.add(parsed.getTest());
-            }
-        } catch (ArgumentValidationException e) {
-            throw new RuntimeException(e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
-        return parsed;
+    public static void main(final String... args) {
+        int exitCode = new CommandLine(new TestDirq()).execute(args);
+        System.exit(exitCode);
     }
 
     private QueueSimple newDirq() throws IOException {
-        if (!options.getType().equals("simple")) {
+        if (!optType.equals("simple")) {
             throw new IllegalArgumentException("only DirQ simple is supported");
         }
-        QueueSimple queue = new QueueSimple(options.getPath());
-        if (options.getGranularity() > -1) {
-            queue.setGranularity(options.getGranularity());
+        QueueSimple queue = new QueueSimple(optPath);
+        if (optGranularity > -1) {
+            queue.setGranularity(optGranularity);
         }
-        if (options.getRndhex() > -1) {
-            queue.setRndHex(options.getRndhex());
+        if (optRndHex > -1) {
+            queue.setRndHex(optRndHex);
         }
-        if (options.getUmask() > -1) {
-            queue.setUmask(options.getUmask());
+        if (optUmask > -1) {
+            queue.setUmask(optUmask);
         }
         return queue;
     }
@@ -181,11 +164,11 @@ public class TestDirq {
     private void testPurge() throws IOException {
         debug("purging the queue...");
         QueueSimple queue = newDirq();
-        if (options.getMaxlock() > -1) {
-            queue.setMaxLock(options.getMaxlock());
+        if (optMaxLock > -1) {
+            queue.setMaxLock(optMaxLock);
         }
-        if (options.getMaxtemp() > -1) {
-            queue.setMaxTemp(options.getMaxtemp());
+        if (optMaxTemp > -1) {
+            queue.setMaxTemp(optMaxTemp);
         }
         queue.purge();
     }
@@ -248,9 +231,9 @@ public class TestDirq {
      * @throws IOException
      */
     private void testAdd() throws IOException {
-        boolean random = options.isRandom();
-        int size = options.getSize();
-        int count = options.getCount();
+        boolean random = optRandom;
+        int size = optSize;
+        int count = optCount;
         if (count > -1) {
             debug(String.format("adding %d elements to the queue...", count));
         } else {
@@ -277,7 +260,7 @@ public class TestDirq {
      * @throws IOException
      */
     private void testRemove() throws IOException {
-        int count = options.getCount();
+        int count = optCount;
         if (count > -1) {
             debug(String.format("removing %d elements from the queue...", count));
         } else {
@@ -313,11 +296,11 @@ public class TestDirq {
     }
 
     private void testSimple() throws IOException {
-        File path = new File(options.getPath());
+        File path = new File(optPath);
         if (path.exists()) {
             die("directory exists: " + path);
         }
-        if (options.getCount() == -1) {
+        if (optCount == -1) {
             die("missing option: --count");
         }
         testAdd();
@@ -379,46 +362,6 @@ public class TestDirq {
     }
 
     /**
-     * Allow to run a set of tests from unit tests.
-     *
-     * @throws IOException
-     */
-    public void mainSimple(final String[] args) throws IOException {
-        options = parseArguments(args);
-        File path = new File(options.getPath());
-        recursiveDelete(path);
-        try {
-            testSimple();
-        } catch (IOException e) {
-            recursiveDelete(path);
-            throw e;
-        }
-        recursiveDelete(path);
-    }
-
-    /**
-     * Execute tests with given command line.
-     *
-     * @param args command line arguments
-     * @throws InterruptedException
-     * @throws IOException
-     */
-    public void doMain(final String[] args) throws InterruptedException, IOException {
-        options = parseArguments(args);
-        if (!options.getList()) {
-            if (options.getPath().length() == 0) {
-                die("Option is mandatory: -p/--path");
-            }
-            if (options.getSleep() > 0) {
-                Thread.sleep(options.getSleep() * SECOND);
-            }
-            for (String test: tests) {
-                runTest(test);
-            }
-        }
-    }
-
-    /**
      * Die with given message.
      *
      * @param message message printed before dieing
@@ -433,22 +376,11 @@ public class TestDirq {
      * @param message message logged
      */
     private void debug(final String message) {
-        if (options.isDebug()) {
+        if (optDebug) {
             String now = new SimpleDateFormat(DATE_FORMAT).format(new Date());
             System.out.printf("# %s TestDirq[%d]: %s%n", now, pid, message);
             System.out.flush();
         }
-    }
-
-    /**
-     * Main called from command line.
-     *
-     * @param args given command line arguments
-     * @throws InterruptedException
-     * @throws IOException
-     */
-    public static void main(final String[] args) throws InterruptedException, IOException {
-        new TestDirq().doMain(args);
     }
 
 }

@@ -4,7 +4,7 @@
   <groupId>ch.cern.dirq.test</groupId>
   <artifactId>dirq-test</artifactId>
   <packaging>jar</packaging>
-  <version>1.5-SNAPSHOT</version>
+  <version>1.5</version>
   <name>dirq-test</name>
   <description>Directory based queue test utility.</description>
   <url>https://github.com/cern-mig/java-dirq-test</url>

@@ -194,7 +194,7 @@
     <dependency>
       <groupId>ch.cern.dirq</groupId>
       <artifactId>dirq</artifactId>
-      <version>1.8</version>
+      <version>1.9</version>
     </dependency>
     <!-- test dependencies -->
     <dependency>
